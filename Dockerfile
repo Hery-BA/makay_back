@@ -19,7 +19,7 @@ COPY src src
 # Puis REMPLACE application.properties par la version propre
 RUN cat > src/main/resources/application.properties << 'EOF'
 spring.application.name=makay
-server.port=${PORT:10000}  # Changé de 8080 à 10000
+server.port=${PORT:10000}
 
 spring.datasource.url=${DATABASE_URL}
 spring.datasource.username=${PGUSER}
@@ -66,6 +66,7 @@ RUN addgroup -g 1001 -S appgroup && \
 
 COPY --from=build --chown=appuser:appgroup /app/target/makay-*.jar app.jar
 
-EXPOSE 10000  # Changé de 8080 à 10000
+EXPOSE 10000
+
 USER appuser
 ENTRYPOINT ["java", "-jar", "app.jar"]
