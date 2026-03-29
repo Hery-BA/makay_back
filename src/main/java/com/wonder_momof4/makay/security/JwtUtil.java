@@ -8,10 +8,12 @@ import java.util.Date;
 
 @Component
 public class JwtUtil {
-    @Value("${app.jwt.secret}") private String secret;
+    //    @Value("${app.jwt.secret}") private String secret;
     @Value("${app.jwt.expiration-ms}") private long expirationMs;
 
-    private SecretKey key() { return Keys.hmacShaKeyFor(secret.getBytes()); }
+    private SecretKey key() {
+        String secret = "makay-super-secret-key-dev-only-change-in-prod-minimum-256-bits";
+        return Keys.hmacShaKeyFor(secret.getBytes()); }
 
     public String generateToken(String email) {
         return Jwts.builder()
