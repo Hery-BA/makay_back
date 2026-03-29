@@ -13,13 +13,12 @@ COPY mvnw .
 COPY .mvn .mvn
 RUN chmod +x mvnw
 
-# Copie tout le source D'ABORD
 COPY src src
 
-# Puis REMPLACE application.properties par la version propre
 RUN cat > src/main/resources/application.properties << 'EOF'
 spring.application.name=makay
 server.port=${PORT:10000}
+server.address=0.0.0.0
 
 spring.datasource.url=${DATABASE_URL}
 spring.datasource.username=${PGUSER}
@@ -50,6 +49,7 @@ resend.from-email=contact@makay-adventures.com
 resend.to-email=${ADMIN_EMAIL:admin@makay-adventures.com}
 
 cors.allowed-origins=${FRONTEND_URL:http://localhost:3000}
+logging.level.org.springframework.web=DEBUG
 EOF
 
 RUN ./mvnw dependency:go-offline -B
@@ -69,4 +69,4 @@ COPY --from=build --chown=appuser:appgroup /app/target/makay-*.jar app.jar
 EXPOSE 10000
 
 USER appuser
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar", "--server.address=0.0.0.0"]
