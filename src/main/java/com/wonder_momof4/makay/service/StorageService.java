@@ -1,80 +1,70 @@
 package com.wonder_momof4.makay.service;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.UUID;
 
 @Slf4j
 @Service
 public class StorageService {
 
-    @Value("${supabase.url}")
-    private String supabaseUrl;
+    private final Cloudinary cloudinary;
 
-    @Value("${supabase.service-role-key}")
-    private String serviceRoleKey;
-
-    @Value("${supabase.storage.bucket}")
-    private String bucket;
-
-    private final RestTemplate restTemplate = new RestTemplate();
+    public StorageService(
+            @Value("${cloudinary.cloud-name}") String cloudName,
+            @Value("${cloudinary.api-key}") String apiKey,
+            @Value("${cloudinary.api-secret}") String apiSecret
+    ) {
+        this.cloudinary = new Cloudinary(ObjectUtils.asMap(
+                "cloud_name", cloudName,
+                "api_key", apiKey,
+                "api_secret", apiSecret,
+                "secure", true
+        ));
+    }
 
     /**
-     * Upload un fichier vers Supabase Storage
-     * @param file     le fichier uploadé
-     * @param folder   le sous-dossier : "expeditions", "blog", "gallery", "testimonials"
+     * Upload un fichier vers Cloudinary
+     * @param file   le fichier uploadé
+     * @param folder le sous-dossier : "expeditions", "blog", "gallery", "testimonials"
      * @return Map contenant "url" et "path"
      */
     public Map<String, String> upload(MultipartFile file, String folder) throws IOException {
-        String extension = getExtension(file.getOriginalFilename());
-        String fileName  = folder + "/" + UUID.randomUUID() + "." + extension;
-        String uploadUrl = supabaseUrl + "/storage/v1/object/" + bucket + "/" + fileName;
+        Map<?, ?> result = cloudinary.uploader().upload(
+                file.getBytes(),
+                ObjectUtils.asMap(
+                        "folder", "makay/" + folder,
+                        "resource_type", "auto"
+                )
+        );
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + serviceRoleKey);
-        headers.setContentType(MediaType.parseMediaType(
-                file.getContentType() != null ? file.getContentType() : "application/octet-stream"
-        ));
+        String url = (String) result.get("secure_url");
+        String path = (String) result.get("public_id");
 
-        HttpEntity<byte[]> entity = new HttpEntity<>(file.getBytes(), headers);
-        restTemplate.exchange(uploadUrl, HttpMethod.POST, entity, String.class);
-
-        String publicUrl = supabaseUrl + "/storage/v1/object/public/" + bucket + "/" + fileName;
-        log.info("Fichier uploadé : {}", publicUrl);
+        log.info("Fichier uploadé : {}", url);
 
         return Map.of(
-                "url",  publicUrl,
-                "path", fileName
+                "url", url,
+                "path", path
         );
     }
 
     /**
-     * Supprime un fichier de Supabase Storage
-     * @param path  le chemin retourné lors de l'upload (ex: "expeditions/uuid.jpg")
+     * Supprime un fichier de Cloudinary
+     * @param path le public_id retourné lors de l'upload
      */
     public void delete(String path) {
-        String deleteUrl = supabaseUrl + "/storage/v1/object/" + bucket + "/" + path;
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + serviceRoleKey);
         try {
-            restTemplate.exchange(deleteUrl, HttpMethod.DELETE, new HttpEntity<>(headers), String.class);
+            cloudinary.uploader().destroy(path, ObjectUtils.emptyMap());
             log.info("Fichier supprimé : {}", path);
         } catch (Exception e) {
             log.warn("Impossible de supprimer le fichier {}: {}", path, e.getMessage());
         }
-    }
-
-    private String getExtension(String filename) {
-        if (filename == null || !filename.contains(".")) return "bin";
-        return filename.substring(filename.lastIndexOf('.') + 1).toLowerCase();
     }
 }
