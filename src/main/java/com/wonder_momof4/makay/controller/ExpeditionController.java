@@ -32,12 +32,12 @@ public class ExpeditionController {
     private final ExpeditionWaypointRepository waypointRepository;
     private final ExpeditionImageRepository imageRepository;
     // ─── PUBLIC ──────────────────────────────────────────────────────────────
-
+    @Transactional(readOnly = true)
     @GetMapping("/api/public/expeditions")
     public List<Expedition> getPublished() {
         return expeditionRepository.findByIsPublishedTrueOrderByStartDateAsc();
     }
-
+    @Transactional(readOnly = true)
     @GetMapping("/api/public/expeditions/{slug}")
     public ResponseEntity<Expedition> getBySlug(@PathVariable String slug) {
         return expeditionRepository.findBySlug(slug)
@@ -47,12 +47,12 @@ public class ExpeditionController {
     }
 
     // ─── ADMIN ───────────────────────────────────────────────────────────────
-
+    @Transactional(readOnly = true)
     @GetMapping("/api/admin/expeditions")
     public List<Expedition> getAll() {
         return expeditionRepository.findAllByOrderByCreatedAtDesc();
     }
-
+    @Transactional(readOnly = true)
     @GetMapping("/api/admin/expeditions/{id}")
     public ResponseEntity<Expedition> getById(@PathVariable UUID id) {
         return expeditionRepository.findById(id)
@@ -175,7 +175,7 @@ public class ExpeditionController {
             @NotBlank String slug,
             @NotBlank String titleFr, String titleEn,
             String descriptionFr, String descriptionEn,
-            @NotNull Integer durationDays,
+            Integer durationDays,
             @NotBlank String difficulty,
             BigDecimal price, Boolean priceOnRequest,
             LocalDate startDate, LocalDate endDate,
@@ -193,6 +193,7 @@ public class ExpeditionController {
     ) {}
 
     // ─── PUBLIC ───────────────────────────────────────────────────────────────
+    @Transactional(readOnly = true)
     @GetMapping("/api/public/expeditions/{slug}/waypoints")
     public ResponseEntity<List<ExpeditionWaypoint>> getWaypointsPublic(@PathVariable String slug) {
         return expeditionRepository.findBySlug(slug)
@@ -203,6 +204,7 @@ public class ExpeditionController {
     }
 
     // ─── ADMIN ───────────────────────────────────────────────────────────────
+    @Transactional(readOnly = true)
     @GetMapping("/api/admin/expeditions/{id}/waypoints")
     public List<ExpeditionWaypoint> getWaypoints(@PathVariable UUID id) {
         return waypointRepository.findByExpeditionIdOrderBySortOrderAsc(id);
