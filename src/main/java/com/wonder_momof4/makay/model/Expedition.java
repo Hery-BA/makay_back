@@ -23,7 +23,7 @@ public class Expedition {
     @Column(name = "title_en") private String titleEn;
     @Column(name = "description_fr", columnDefinition = "TEXT") private String descriptionFr;
     @Column(name = "description_en", columnDefinition = "TEXT") private String descriptionEn;
-    @Column(name = "duration_days", nullable = false) private Integer durationDays;
+    @Column(name = "duration_days") private Integer durationDays;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
