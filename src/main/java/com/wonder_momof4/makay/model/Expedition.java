@@ -63,5 +63,5 @@ public class Expedition {
     @PrePersist protected void onCreate() { createdAt = updatedAt = LocalDateTime.now(); }
     @PreUpdate  protected void onUpdate() { updatedAt = LocalDateTime.now(); }
 
-    public enum Difficulty { DISCOVERY, INTERMEDIATE, EXPEDITION }
+    public enum Difficulty { DISCOVERY, INTERMEDIATE, EXPEDITION,EXTREME }
 }
