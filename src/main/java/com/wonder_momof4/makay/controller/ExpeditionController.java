@@ -197,6 +197,7 @@ public class ExpeditionController {
     @GetMapping("/api/public/expeditions/{slug}/waypoints")
     public ResponseEntity<List<ExpeditionWaypoint>> getWaypointsPublic(@PathVariable String slug) {
         return expeditionRepository.findBySlug(slug)
+                .filter(Expedition::getIsPublished)
                 .map(exp -> ResponseEntity.ok(
                         waypointRepository.findByExpeditionIdOrderBySortOrderAsc(exp.getId())
                 ))
