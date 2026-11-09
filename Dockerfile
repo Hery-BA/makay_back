@@ -35,7 +35,7 @@ spring.flyway.locations=classpath:db/migration
 spring.servlet.multipart.max-file-size=100MB
 spring.servlet.multipart.max-request-size=100MB
 
-app.jwt.secret=${JWT_SECRET:makay-super-secret-key-dev-only-change-in-prod-minimum-256-bits}
+app.jwt.secret=${JWT_SECRET}
 app.jwt.expiration-ms=86400000
 
 supabase.url=${SUPABASE_URL}
